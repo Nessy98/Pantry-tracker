@@ -1,5 +1,5 @@
 import tkinter as tk
-from main_frame import get_main_frame
+from frames import get_top_frame, get_bottom_frame
 from connection import connection
 #import RPi.GPIO as GPIO
 #import picamera
@@ -26,9 +26,13 @@ def TakeFromPantry():
 #
 
 root = tk.Tk()
-root.resizable(width=False, height=False)
-root.geometry("320x300+89+50")
+root.resizable(width=True, height=True)
+root.geometry("800x600+89+50")
 root.title("Pantry Tracker")
 
-root.frame = get_main_frame(root)
+
+get_top_frame(root)
+get_bottom_frame(root)
+
+
 root.mainloop()

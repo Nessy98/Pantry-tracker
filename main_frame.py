@@ -11,10 +11,6 @@ def CameraON():
 #    camera.start_preview()
     tk.Button(root.frame, text='Capture', command=Capture).grid(row=2,column=1)
 
-def get_main_frame(root):
-    frame = tk.Frame(root)
-    frame.grid(row=5, column=2)
-    tk.Button(frame, text='Add to pantry', command=CameraON).grid(row=1, column = 1)
-    tk.Button(frame, text='Take from pantry', command=CameraOFF).grid(row=1, column = 2)
-    return frame
+
+
 
