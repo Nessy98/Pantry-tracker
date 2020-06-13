@@ -1,6 +1,6 @@
 import tkinter as tk
 from frames import get_top_frame, get_bottom_frame
-from connection import connection
+from connection import connection, setup_database
 #import RPi.GPIO as GPIO
 #import picamera
 from time import sleep
@@ -25,6 +25,7 @@ def TakeFromPantry():
     pass
 #
 
+setup_database()
 root = tk.Tk()
 root.resizable(width=True, height=True)
 root.geometry("800x600+89+50")
