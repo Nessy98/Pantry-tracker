@@ -1,5 +1,9 @@
 import sqlite3
 
+import cv2
+import numpy as np
+import pyzbar.pyzbar as pyzbar
+
 connection = sqlite3.connect('pantry.db')
 
 def setup_database():
@@ -23,3 +27,12 @@ def setup_database():
 
 #c.execute('''INSERT INTO foods
 #             VALUES(101010, 'coca-cola')''')
+
+def decode_image(file):
+    image = cv2.imread(file)
+    decode_obj = pyzbar.decode(image)
+
+    if not decode_obj:
+        return None
+
+    return decode_obj[0].data
