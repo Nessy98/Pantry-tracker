@@ -27,9 +27,6 @@ def setup_database():
     connection.execute(product_query)
     connection.execute(stock_query)
 
-#c.execute('''INSERT INTO foods
-#             VALUES(101010, 'coca-cola')''')
-
 def decode_image(file):
     image = cv2.imread(file)
     decode_obj = pyzbar.decode(image)
@@ -46,11 +43,46 @@ def get_stock():
                        ON stock.barcode = products.barcode
                    '''
 
-    data = connection.execute(select_query)
-    return data
+    cursor = connection.cursor()
+    cursor.execute(select_query)
 
-# def get_product_info(barcode):
-#     product = openfoodfacts.products.get_product(barcode)
-#     product = product.get('product')
-#     # print((product.get('product')).keys())
-#     print(product)
+    return cursor.fetchall()
+
+def add_product_to_database(product):
+    insert_query = '''INSERT INTO products (barcode, name, unit)
+                      VALUES (?, ?, ?)
+                   '''
+
+    cursor = connection.cursor()
+    cursor.execute(insert_query, (product['barcode'], product['name'], product['unit']))
+
+def get_product(barcode):
+    product = {}
+    select_query = ''' SELECT products.barcode, name, unit, quantity
+                       FROM products
+                       LEFT JOIN stock
+                       ON products.barcode = stock.barcode
+                       WHERE products.barcode=?
+                   '''
+    cursor = connection.cursor()
+    cursor.execute(select_query, (barcode,))
+    result = cursor.fetchone()
+
+    if result is None:
+        result = openfoodfacts.products.get_product(barcode)
+        result = result.get('product')
+        quantity = result.get('quantity')
+
+        product['barcode'] = barcode
+        product['name'] = result.get('product_name')
+        product['unit'] = (quantity.split())[1].upper()
+        product['quantity'] = (quantity.split())[0]
+
+        add_product_to_database(product)
+    else:
+        print(result)
+        product['barcode'] = result[0]
+        product['name'] = result[1]
+        product['unit'] = result[2]
+
+    return product
