@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import pyzbar.pyzbar as pyzbar
 
+import openfoodfacts
+
 connection = sqlite3.connect('pantry.db')
 
 def setup_database():
@@ -35,4 +37,20 @@ def decode_image(file):
     if not decode_obj:
         return None
 
-    return decode_obj[0].data
+    return str(decode_obj[0].data)
+
+def get_stock():
+    select_query = ''' SELECT stock.barcode, name, unit, quantity
+                       FROM stock
+                       LEFT JOIN products
+                       ON stock.barcode = products.barcode
+                   '''
+
+    data = connection.execute(select_query)
+    return data
+
+# def get_product_info(barcode):
+#     product = openfoodfacts.products.get_product(barcode)
+#     product = product.get('product')
+#     # print((product.get('product')).keys())
+#     print(product)
