@@ -86,3 +86,51 @@ def get_product(barcode):
         product['unit'] = result[2]
 
     return product
+
+def insert_stock(product):
+    create_query = '''INSERT INTO stock (barcode, quantity)
+                      VALUES (?, ?)
+                   '''
+
+    cursor = connection.cursor()
+    cursor.execute(create_query, (product['bracode'], product['quantity']))
+
+
+def update_stock_table(product):
+    update_query = '''UPDATE stock
+                      SET quantity = ?
+                      WHERE barcode = ?
+                   '''
+
+    cursor = connection.cursor()
+    cursor.execute(update_query, (product['quantity'], product['barcode']))
+
+def delete_from_stock(product):
+    delete_query = '''DELETE FROM stock
+                      WHERE stock.barcode = ?
+                   '''
+
+    cursor = connection.cursor()
+    cursor.execute(delete_query, (product['barcode'],))
+
+def update_stock(product):
+    if product['quantity'] == 0:
+        # The given product has been used and it's no longer avaliable
+        delete_from_stock(product)
+        return
+
+    select_query = '''SELECT *
+                      FROM stock
+                      WHERE barcode=?
+                   '''
+
+    cursor = connection.cursor()
+    cursor.execute(select_query, (product['barcode'],))
+    result = cursor.fetchone()
+    if result is None:
+        # A product has been added to the stock
+        insert_stock(product)
+    else:
+        # A part from the given product has been used.
+        product['quantity'] = result[1] - product['quantity']
+        update_stock_table(product)

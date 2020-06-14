@@ -1,6 +1,6 @@
 import tkinter as tk
 from frames import get_top_frame, get_bottom_frame
-from connection import connection, setup_database, decode_image, get_stock
+from connection import connection, setup_database, decode_image, get_stock, get_product, update_stock
 #import RPi.GPIO as GPIO
 #import picamera
 from time import sleep
@@ -26,15 +26,7 @@ def TakeFromPantry():
 #
 
 setup_database()
-# barcode = decode_image('test.png')
-# connection.execute('''INSERT INTO products
-#                       VALUES ('23dg556gh44224', 'coca-cola', 'L');
-#                    ''')
 
-# connection.execute('''INSERT INTO stock
-#                       VALUES ('23dg556gh44224', 2);
-#                    ''')
-# get_stock()
 root = tk.Tk()
 root.resizable(width=True, height=True)
 root.geometry("800x600+89+50")
