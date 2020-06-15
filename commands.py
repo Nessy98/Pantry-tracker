@@ -1,4 +1,4 @@
-from connection import connection
+from connection import connection, decode_image, get_product, update_stock
 #import RPi.GPIO as GPIO
 #import picamera
 
@@ -12,11 +12,16 @@ def start_camera():
 #    camera.start_preview()
 
 def scan():
-    # camera.capture('capture.jpg')
+    image_file = './image.png'
+    # camera.capture(image_file)
+    barcode = decode_image(image_file)
+    return get_product(barcode)
 
-    # process image and extract barcode
-    barcode = '101010'
 
-    return connection.execute('SELECT p.*, s.quantity FROM products AS p LEFT JOIN stock AS s ON p.barcode=s.barcode WHERE p.barcode = ?', (barcode, )).fetchone()
-
+def save_product(product, quantity, form, root, update_products):
+    update_stock(product, quantity)
+    products_list = root.get_child('top_frame').get_child('products_list')
+    update_products(products_list)
+    form.grid_forget()
+    form.destroy()
 

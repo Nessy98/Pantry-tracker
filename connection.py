@@ -55,6 +55,7 @@ def add_product_to_database(product):
 
     cursor = connection.cursor()
     cursor.execute(insert_query, (product['barcode'], product['name'], product['unit']))
+    connection.commit();
 
 def get_product(barcode):
     product = {}
@@ -80,7 +81,6 @@ def get_product(barcode):
 
         add_product_to_database(product)
     else:
-        print(result)
         product['barcode'] = result[0]
         product['name'] = result[1]
         product['unit'] = result[2]
@@ -93,7 +93,8 @@ def insert_stock(product):
                    '''
 
     cursor = connection.cursor()
-    cursor.execute(create_query, (product['bracode'], product['quantity']))
+    cursor.execute(create_query, (product['barcode'], product['quantity']))
+    connection.commit();
 
 
 def update_stock_table(product):
@@ -104,6 +105,7 @@ def update_stock_table(product):
 
     cursor = connection.cursor()
     cursor.execute(update_query, (product['quantity'], product['barcode']))
+    connection.commit();
 
 def delete_from_stock(product):
     delete_query = '''DELETE FROM stock
@@ -112,8 +114,10 @@ def delete_from_stock(product):
 
     cursor = connection.cursor()
     cursor.execute(delete_query, (product['barcode'],))
+    connection.commit();
 
-def update_stock(product):
+def update_stock(product, quantity):
+    product['quantity'] = quantity
     if product['quantity'] == 0:
         # The given product has been used and it's no longer avaliable
         delete_from_stock(product)
@@ -131,6 +135,5 @@ def update_stock(product):
         # A product has been added to the stock
         insert_stock(product)
     else:
-        # A part from the given product has been used.
-        product['quantity'] = result[1] - product['quantity']
+        # More has been added or used
         update_stock_table(product)

@@ -1,16 +1,37 @@
+import types
 import tkinter as tk
 from tkinter import ttk
-from commands import start_camera, scan
+from commands import start_camera, scan, save_product
+from connection import get_stock
 
+def patch_frame(target):
+    def get_child(self, name):
+        print(self.winfo_children())
+        return [child for child in self.winfo_children() if child.name == name][0]
 
+    target.get_child = types.MethodType(get_child, target)
+
+def get_window():
+    root = tk.Tk()
+    root.resizable(width=True, height=True)
+    root.geometry("800x600+89+50")
+    root.title("Pantry Tracker")
+    patch_frame(root)
+    return root
 
 def get_top_frame(root):
     frame = tk.Frame(root)
+    frame.name = 'top_frame'
+    patch_frame(frame)
+
+    frame.root = root
     frame.config(background='#3E4eee')
     frame.pack(side = tk.TOP, expand = True, fill = tk.BOTH)
 
+
     cols = ('Name', 'Quantity', 'Unit')
     products_list = ttk.Treeview(frame, columns=cols, show='headings')
+    products_list.name = 'products_list'
 
     products_list.heading("Name", text="Name")
     products_list.column("Name", minwidth=0, width=400, stretch=tk.NO)
@@ -20,10 +41,14 @@ def get_top_frame(root):
 
     products_list.heading("Unit", text="Unit")
     products_list.column("Unit", minwidth=0, width=200, stretch=tk.NO)
+    update_products_list(products_list)
 
-    tempList = [['Coca-Cola', '10', 'Liter'], ['Cheese', '0.500', 'Kg'],
-            ['Pork shoulder', '1.4', 'Kg']]
-    for i, (name, quantity, unit) in enumerate(tempList, start=1):
+
+
+def update_products_list(products_list):
+    products_list.delete(*products_list.get_children())
+    stock = get_stock()
+    for i, (barcode, name, unit, quantity) in enumerate(stock, start=1):
         products_list.insert("", "end", values=(name, quantity, unit))
 
     products_list.pack(expand = True, fill = tk.BOTH)
@@ -31,7 +56,11 @@ def get_top_frame(root):
 
 def get_bottom_frame(root):
     frame = tk.Frame(root, highlightbackground='#3E4149', highlightthickness=1, borderwidth=2)
-    frame.pack(side = tk.BOTTOM, expand = True, fill = "x")
+    frame.name = 'bottom_frame'
+    frame.root = root
+    patch_frame(frame)
+
+    frame.pack(side = tk.BOTTOM, expand = True, fill = "both")
     frame.config(background='#3E4149')
 
     start_scanner_btn = tk.Button(frame, highlightbackground='#3E4149', text="Start Scanner", command=start_camera, fg="black")
@@ -40,43 +69,43 @@ def get_bottom_frame(root):
     scan_btn = tk.Button(frame, highlightbackground='#3E4149', text="Scan", command=lambda: get_product_form(frame, scan()), fg="black")
     scan_btn.pack( side = tk.TOP)
 
-def get_product_form(root, product):
-    print(product)
-    (barcode, name, unit, quantity) = product
-
-    frame = tk.Frame(root, highlightbackground='#3E4149', highlightthickness=1,  borderwidth=2)
+def get_product_form(parent, product):
+    frame = tk.Frame(parent, highlightbackground='#3E4149', highlightthickness=1,  borderwidth=2)
     frame.pack(side = tk.BOTTOM, expand = True, fill = "x")
     frame.config(background='#3E4149')
 
+    barcode_label = tk.Label(frame ,text = "Barcode: %s " % product['barcode'], justify=tk.LEFT)
+    barcode_label.grid(row = 0,column = 0, sticky='w')
+    barcode_label.config(background='#3E4149')
+
     name_label = tk.Label(frame ,text = "Product name:", justify=tk.LEFT)
-    name_label.grid(row = 0,column = 0, sticky='w')
+    name_label.grid(row = 1,column = 0, sticky='w')
     name_label.config(background='#3E4149')
 
     unit_label = tk.Label(frame ,text = "Unit:", justify=tk.LEFT)
-    unit_label.grid(row = 1,column = 0, sticky='w')
+    unit_label.grid(row = 2,column = 0, sticky='w')
     unit_label.config(background='#3E4149')
 
     qty_label = tk.Label(frame ,text = "Quantity:", justify=tk.LEFT)
-    qty_label.grid(row = 2,column = 0, sticky='w')
+    qty_label.grid(row = 3,column = 0, sticky='w')
     qty_label.config(background='#3E4149')
 
     name_entry = tk.Entry(frame, highlightthickness=1, borderwidth=0)
-    name_entry.grid(row = 0, column = 1, columnspan=3, sticky='we')
+    name_entry.grid(row = 1, column = 1, columnspan=3, sticky='we')
     name_entry.config(background='#3E4149', highlightbackground = "black", highlightcolor= "black")#, state="readonly")
-    name_entry.insert(0, name)
+    name_entry.insert(0, product['name'])
 
-
-    unit_var = tk.StringVar()
-    unit_var.set(unit)
+    unit_var = tk.StringVar(None, product['unit'])
+    unit_var.set(product['unit'])
 
     liter_btn = tk.Radiobutton(frame,
         indicatoron=0,
         text="Liter",
         padx = 20,
         variable=unit_var,
-        value=unit
+        value="L"
     )
-    liter_btn.grid(row=1, column=1)
+    liter_btn.grid(row=2, column=1)
     liter_btn.config(background='#3E4149', highlightbackground = "black", highlightcolor= "black")
 
     kg_btn = tk.Radiobutton(frame,
@@ -84,15 +113,14 @@ def get_product_form(root, product):
         text="Kilogram",
         padx = 20,
         variable=unit_var,
-        value="KILOGRAM"
+        value="KG"
     )
-    kg_btn.grid(row=1, column=3)
+    kg_btn.grid(row=2, column=3)
     kg_btn.config(background='#3E4149', highlightbackground = "black", highlightcolor= "black")
 
     qty_entry = tk.Entry(frame, highlightthickness=1, borderwidth=0)
-    qty_entry.grid(row = 2,column = 1, columnspan=3, sticky='we')
+    qty_entry.grid(row = 3,column = 1, columnspan=3, sticky='we')
     qty_entry.config(background='#3E4149', highlightbackground = "black", highlightcolor= "black")
-    qty_entry.insert(0, quantity)
 
-    save_btn = tk.Button(frame, highlightbackground='#3E4149', text="Save", fg="black")
-    save_btn.grid(row=3, column=0, columnspan=4, sticky='we')
+    save_btn = tk.Button(frame, highlightbackground='#3E4149', command=lambda: save_product(product, qty_entry.get(), frame, parent.root, update_products_list),text="Save", fg="black")
+    save_btn.grid(row=4, column=0, columnspan=4, sticky='we')
