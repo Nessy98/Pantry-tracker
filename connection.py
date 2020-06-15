@@ -24,9 +24,8 @@ def setup_database():
     # Create tables products and stock
     connection.execute(product_query)
     connection.execute(stock_query)
-
-#c.execute('''INSERT INTO foods
-#             VALUES(101010, 'coca-cola')''')
+    connection.execute('INSERT INTO products VALUES("101010", "Coca Cola", "LITER")')
+    connection.execute('INSERT INTO stock VALUES("101010", 5)')
 
 def decode_image(file):
     image = cv2.imread(file)
