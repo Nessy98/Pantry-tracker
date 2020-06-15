@@ -1,4 +1,4 @@
-from connection import connection, decode_image, get_product, update_stock
+from functions import decode_image, get_product, update_stock
 import RPi.GPIO as GPIO
 import picamera
 
