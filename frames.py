@@ -1,8 +1,10 @@
 import types
+
 import tkinter as tk
 from tkinter import ttk
+
+from functions import get_stock
 from commands import start_camera, scan, save_product
-from  functions import get_stock
 
 def patch_frame(target):
     def get_child(self, name):

@@ -1,6 +1,7 @@
-from functions import decode_image, get_product, update_stock
-import RPi.GPIO as GPIO
 import picamera
+import RPi.GPIO as GPIO
+
+from functions import decode_image, get_product, update_stock
 
 camera = picamera.PiCamera()
 
