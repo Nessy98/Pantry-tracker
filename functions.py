@@ -56,7 +56,7 @@ def add_product_to_database(product):
 
     cursor = connection.cursor()
     cursor.execute(insert_query, (product['barcode'], product['name'], product['unit']))
-    connection.commit();
+    connection.commit()
 
 def get_product(barcode):
     product = {}
@@ -107,7 +107,7 @@ def insert_stock(product):
 
     cursor = connection.cursor()
     cursor.execute(create_query, (product['barcode'], product['quantity']))
-    connection.commit();
+    connection.commit()
 
 
 def update_stock_table(product):
@@ -118,7 +118,7 @@ def update_stock_table(product):
 
     cursor = connection.cursor()
     cursor.execute(update_query, (product['quantity'], product['barcode']))
-    connection.commit();
+    connection.commit()
 
 def delete_from_stock(product):
     delete_query = '''DELETE FROM stock
@@ -127,7 +127,18 @@ def delete_from_stock(product):
 
     cursor = connection.cursor()
     cursor.execute(delete_query, (product['barcode'],))
-    connection.commit();
+    connection.commit()
+
+def get_product_from_stock(barcode):
+    select_query = '''SELECT *
+                      FROM stock
+                      WHERE barcode=?
+                   '''
+
+    cursor = connection.cursor()
+    cursor.execute(select_query, (barcode,))
+
+    return cursor.fetchone()
 
 def update_stock(product, quantity):
     product['quantity'] = quantity
@@ -136,14 +147,7 @@ def update_stock(product, quantity):
         delete_from_stock(product)
         return
 
-    select_query = '''SELECT *
-                      FROM stock
-                      WHERE barcode=?
-                   '''
-
-    cursor = connection.cursor()
-    cursor.execute(select_query, (product['barcode'],))
-    result = cursor.fetchone()
+    result = get_product_from_stock(product['barcode'])
     if result is None:
         # A product has been added to the stock
         insert_stock(product)
