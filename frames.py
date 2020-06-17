@@ -8,28 +8,31 @@ from commands import start_camera, scan, save_product
 
 def patch_frame(target):
     def get_child(self, name):
-        print(self.winfo_children())
         return [child for child in self.winfo_children() if child.name == name][0]
 
     target.get_child = types.MethodType(get_child, target)
 
 def get_window():
     root = tk.Tk()
+    
+    # Setup root
     root.resizable(width=True, height=True)
     root.geometry("800x350+89+50")
     root.title("Pantry Tracker")
+
     patch_frame(root)
+
     return root
 
 def get_top_frame(root):
     frame = tk.Frame(root)
     frame.name = 'top_frame'
+
     patch_frame(frame)
 
     frame.root = root
     frame.config(background='#3E4eee')
     frame.pack(side = tk.TOP, expand = False, fill = tk.X)
-
 
     cols = ('Name', 'Quantity', 'Unit')
     products_list = ttk.Treeview(frame, columns=cols, show='headings')
@@ -43,9 +46,8 @@ def get_top_frame(root):
 
     products_list.heading("Unit", text="Unit")
     products_list.column("Unit", minwidth=0, width=200, stretch=tk.NO)
+
     update_products_list(products_list)
-
-
 
 def update_products_list(products_list):
     products_list.delete(*products_list.get_children())
@@ -55,11 +57,11 @@ def update_products_list(products_list):
 
     products_list.pack(expand = True, fill = tk.X)
 
-
 def get_bottom_frame(root):
     frame = tk.Frame(root, highlightbackground='#3E4149', highlightthickness=1, borderwidth=2)
     frame.name = 'bottom_frame'
     frame.root = root
+
     patch_frame(frame)
 
     frame.pack(side = tk.BOTTOM, expand = True, fill = tk.BOTH)
@@ -67,11 +69,14 @@ def get_bottom_frame(root):
 
     start_scanner_btn = tk.Button(frame, highlightbackground='#3E4149', text="Start Scanner", command=start_camera, fg="black")
     start_scanner_btn.grid(row = 0,column = 0, sticky='w')
-    scan_btn = tk.Button(frame, highlightbackground='#3E4149', text="Scan", command=lambda: get_product_form(frame, scan()), fg="black")
+    
+    scan_btn = tk.Button(frame, highlightbackground='#3E4149', text="Scan",
+                         command=lambda: get_product_form(frame, scan()), fg="black"
+                        )
     scan_btn.grid(row = 0, column = 1, sticky='w', columnspan=4)
 
 def get_product_form(parent, product):
-    frame = tk.Frame(parent, highlightbackground='#3E4149', highlightthickness=1,  borderwidth=2)
+    frame = tk.Frame(parent, highlightbackground='#3E4149', highlightthickness=1, borderwidth=2)
     frame.grid(row=1, column=0)
     frame.config(background='#3E4149')
 
@@ -93,7 +98,7 @@ def get_product_form(parent, product):
 
     name_entry = tk.Entry(frame, highlightthickness=1, borderwidth=0)
     name_entry.grid(row = 1, column = 1, columnspan=3, sticky='we')
-    name_entry.config(background='#3E4149', highlightbackground = "black", highlightcolor= "black")
+    name_entry.config(background='#3E4149', highlightbackground="black", highlightcolor="black")
     name_entry.insert(0, product['name'])
 
     unit_var = tk.StringVar(None, product['unit'])
@@ -102,12 +107,13 @@ def get_product_form(parent, product):
     liter_btn = tk.Radiobutton(frame,
         indicatoron=0,
         text="Liter",
-        padx = 20,
+        padx =20,
         variable=unit_var,
         value="L"
     )
+
     liter_btn.grid(row=2, column=1)
-    liter_btn.config(background='#3E4149', highlightbackground = "black", highlightcolor= "black")
+    liter_btn.config(background='#3E4149', highlightbackground="black", highlightcolor="black")
 
     kg_btn = tk.Radiobutton(frame,
         indicatoron=0,
@@ -116,13 +122,17 @@ def get_product_form(parent, product):
         variable=unit_var,
         value="KG"
     )
+
     kg_btn.grid(row=2, column=3)
-    kg_btn.config(background='#3E4149', highlightbackground = "black", highlightcolor= "black")
+    kg_btn.config(background='#3E4149', highlightbackground="black", highlightcolor="black")
 
     qty_entry = tk.Entry(frame, highlightthickness=1, borderwidth=0)
     qty_entry.grid(row = 3,column = 1, columnspan=3, sticky='we')
-    qty_entry.config(background='#3E4149', highlightbackground = "black", highlightcolor= "black")
+    qty_entry.config(background='#3E4149', highlightbackground="black", highlightcolor="black")
     qty_entry.insert(0, product['quantity'])
 
-    save_btn = tk.Button(frame, highlightbackground='#3E4149', command=lambda: save_product(product, qty_entry.get(), frame, parent.root, update_products_list),text="Save", fg="black")
+    save_btn = tk.Button(frame, highlightbackground='#3E4149', 
+                         command=lambda: save_product(product, qty_entry.get(), frame, parent.root, update_products_list),
+                         text="Save", fg="black"
+                        )
     save_btn.grid(row=0, column=4, columnspan=4, sticky='we')
