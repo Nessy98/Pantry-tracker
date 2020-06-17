@@ -33,8 +33,7 @@ def decode_image(file):
 
     if not decode_obj:
         return None
-   
-    print(str(decode_obj[0].data))
+
     return str(decode_obj[0].data)
 
 def get_stock():
@@ -70,16 +69,15 @@ def get_product(barcode):
     cursor.execute(select_query, (barcode,))
     result = cursor.fetchone()
 
-    print(barcode)
-
     if result is None:
         result = openfoodfacts.products.get_product(barcode)
-        print(result)
         result = result.get('product')
+
         quantity = result.get('quantity')
 
         product['barcode'] = barcode
         product['name'] = result.get('product_name')
+
         qty_split = quantity.split()
         if len(qty_split) > 2:
             product['unit'] = qty_split[1].upper()
@@ -89,10 +87,10 @@ def get_product(barcode):
         add_product_to_database(product)
 
     else:
-        print(result[3])
         product['barcode'] = result[0]
         product['name'] = result[1]
         product['unit'] = result[2]
+
         if result[3] is None:
             product['quantity'] = 0
         else:
